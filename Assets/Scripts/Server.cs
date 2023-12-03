@@ -9,6 +9,7 @@ public class Server : MonoBehaviour
     Socket socket;
     Socket client;
     bool clientConnected = false;
+    [SerializeField] string prefabName;
     void Start()
     {
         socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -40,10 +41,10 @@ public class Server : MonoBehaviour
 
             try
             {
-                PositionPacket packet = new PositionPacket(new Vector3(1, 0, 1), "4");
-
+                Vector3 position = new Vector3(Random.Range(1, 5), Random.Range(1, 5), Random.Range(1, 5));
+                InstantiationPacket packet = new InstantiationPacket(prefabName, position, Quaternion.identity);
                 client.Send(packet.Serialize());
-
+                Debug.LogError("Server has sent instantiation");
             }
             catch (SocketException ex) { }
         }

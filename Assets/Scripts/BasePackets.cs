@@ -29,12 +29,12 @@ public class BasePacket
     {
         this.packetType = PacketType.None;
     }
-    protected void Serialize()
+    public byte[] Serialize()
     {
         wms = new MemoryStream();
         bw = new BinaryWriter(wms);
-
         bw.Write((int)packetType);
+        return wms.ToArray();
 
     }
     public virtual BasePacket Deserialize(byte[] data)

@@ -19,28 +19,18 @@ public class Client : MonoBehaviour
     {
         try
         {
-            byte[] buffer = new byte[1024];
-            socket.Receive(buffer);
-            if (socket.Receive(buffer) > 0)
+            if (socket.Available > 0)
             {
+                byte[] buffer = new byte[socket.Available];
+                socket.Receive(buffer);
 
                 BasePacket bp = new BasePacket().Deserialize(buffer);
-                if (bp.packetType == BasePacket.PacketType.Position)
+                if (bp.packetType == BasePacket.PacketType.Instanstiate)
                 {
-                    PositionPacket pp = new PositionPacket().Deserialize(buffer);
-                    Debug.Log(pp.packetType);
-                    Debug.Log(pp.position);
-
-                    GameObject prefab = Resources.Load<GameObject>(pp.prefabName);
-
-                    if (prefab == null)
-                    {
-                        GameObject instantiateObject = Instantiate(prefab, pp.position, Quaternion.identity);
-                    }
-                    else
-                    {
-                        Debug.LogError("Prefab not found " + pp.prefabName);
-                    }
+                    InstantiationPacket instantiationPacket = new InstantiationPacket().Deserialize(buffer);
+                    GameObject prefabToSpawn = Resources.Load(instantiationPacket.prefabName) as GameObject;
+                    Instantiate(prefabToSpawn, instantiationPacket.position, instantiationPacket.rotation);
+                    Debug.LogError("PREFAB SPAWNED");
                 }
             }
         }
