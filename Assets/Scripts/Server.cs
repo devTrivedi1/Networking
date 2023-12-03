@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Net.Sockets;
 using System.Net;
+using UnityEngine.UIElements;
 
 public class Server : MonoBehaviour
 {
@@ -56,17 +57,23 @@ public class Server : MonoBehaviour
 
                         for (int u = 0; u < clientList.Count; u++)
                         {
-                            clientList[u].Send(packet.Serialize());
+                            StartCoroutine(SendPacket(packet, u));
                             amountOfCubesSpawned++;
                             Debug.LogError("Server has sent instantiation");
                         }
                         clientsSynced++;
                     }
                 }
-
             }
             catch (SocketException ex) { }
         }
 
+    }
+
+    private IEnumerator SendPacket(InstantiationPacket packet, int u)
+    {
+        yield return new WaitForSeconds(Random.Range(1, 10));
+        clientList[u].Send(packet.Serialize());
+        Debug.LogError("Server has sent packet");
     }
 }

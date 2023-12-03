@@ -14,6 +14,7 @@ public class BasePacket
         Rotation,
         Id
     }
+    public ushort packetSize { get; private set; }
     public PacketType packetType { get; private set; }
 
     protected MemoryStream wms;
@@ -33,16 +34,25 @@ public class BasePacket
     {
         wms = new MemoryStream();
         bw = new BinaryWriter(wms);
+        bw.Write(packetSize);
         bw.Write((int)packetType);
         return wms.ToArray();
 
     }
-    public virtual BasePacket Deserialize(byte[] data)
+    public virtual BasePacket Deserialize(byte[] data, int index)
     {
         rms = new MemoryStream(data);
         br = new BinaryReader(rms);
+        packetSize = br.ReadUInt16();
         packetType = (PacketType)br.ReadInt32();
 
         return this;
+    }
+
+    protected void FinishSerialization()
+    {
+        packetSize = (ushort)wms.Length;
+        bw.Seek(-packetSize, SeekOrigin.Current);
+        bw.Write(packetSize);
     }
 }

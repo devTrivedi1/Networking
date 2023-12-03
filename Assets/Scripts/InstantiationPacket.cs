@@ -33,12 +33,14 @@ public class InstantiationPacket : BasePacket
         bw.Write(rotation.z);
         bw.Write(rotation.w);
 
+        FinishSerialization();
+
         return wms.ToArray();
 
     }
-    public new InstantiationPacket Deserialize(byte[] data)
+    public new InstantiationPacket Deserialize(byte[] data, int index)
     {
-        base.Deserialize(data);
+        base.Deserialize(data, index);
         prefabName = br.ReadString();
         position = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
         rotation = new Quaternion(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());

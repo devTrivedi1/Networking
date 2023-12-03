@@ -21,17 +21,22 @@ public class Client : MonoBehaviour
         {
             if (socket.Available > 0)
             {
+                int index = 0;
                 byte[] buffer = new byte[socket.Available];
                 socket.Receive(buffer);
-
-                BasePacket bp = new BasePacket().Deserialize(buffer);
-                if (bp.packetType == BasePacket.PacketType.Instanstiate)
+                while (index < buffer.Length)
                 {
-                    InstantiationPacket instantiationPacket = new InstantiationPacket().Deserialize(buffer);
-                    GameObject prefabToSpawn = Resources.Load(instantiationPacket.prefabName) as GameObject;
-                    Instantiate(prefabToSpawn, instantiationPacket.position, instantiationPacket.rotation);
-                    Debug.LogError("PREFAB SPAWNED");
+                    BasePacket bp = new BasePacket().Deserialize(buffer, index);
+                    if (bp.packetType == BasePacket.PacketType.Instanstiate)
+                    {
+                        InstantiationPacket instantiationPacket = new InstantiationPacket().Deserialize(buffer, index);
+                        GameObject prefabToSpawn = Resources.Load(instantiationPacket.prefabName) as GameObject;
+                        Instantiate(prefabToSpawn, instantiationPacket.position, instantiationPacket.rotation);
+                        Debug.LogError("PREFAB SPAWNED");
+                    }
+                    index += bp.packetSize;
                 }
+
             }
         }
         catch (Exception ex)
