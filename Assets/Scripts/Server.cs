@@ -7,9 +7,13 @@ using System.Net;
 public class Server : MonoBehaviour
 {
     Socket socket;
-    Socket client;
+    Socket clientQueueSocket;
+    List<Socket> clientList = new List<Socket>();
     bool clientConnected = false;
     [SerializeField] string prefabName;
+    [SerializeField] int clientsToSync;
+    [SerializeField] int clientsSynced;
+    [SerializeField] int amountOfCubesSpawned;
     void Start()
     {
         socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -24,7 +28,8 @@ public class Server : MonoBehaviour
 
         try
         {
-            client = socket.Accept();
+            clientQueueSocket = socket.Accept();
+            clientList.Add(clientQueueSocket);
             Debug.Log("Client connected");
             clientConnected = true;
 
@@ -41,10 +46,24 @@ public class Server : MonoBehaviour
 
             try
             {
-                Vector3 position = new Vector3(Random.Range(1, 5), Random.Range(1, 5), Random.Range(1, 5));
-                InstantiationPacket packet = new InstantiationPacket(prefabName, position, Quaternion.identity);
-                client.Send(packet.Serialize());
-                Debug.LogError("Server has sent instantiation");
+                if (clientsSynced < clientsToSync && clientList.Count == 2)
+                {
+                    for (int i = 0; i < clientList.Count; i++)
+                    {
+                        Vector3 position = new Vector3(Random.Range(1, 10), Random.Range(1, 10), Random.Range(1, 10));
+                        InstantiationPacket packet = new InstantiationPacket(prefabName, position, Quaternion.identity);
+                        Debug.LogError(position);
+
+                        for (int u = 0; u < clientList.Count; u++)
+                        {
+                            clientList[u].Send(packet.Serialize());
+                            amountOfCubesSpawned++;
+                            Debug.LogError("Server has sent instantiation");
+                        }
+                        clientsSynced++;
+                    }
+                }
+
             }
             catch (SocketException ex) { }
         }
